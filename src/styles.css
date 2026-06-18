@@ -1,0 +1,259 @@
+/* ─── Button ──────────────────────────────────────────── */
+.sp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+  line-height: 1;
+}
+.sp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.sp-btn--primary {
+  background: #2563EB;
+  color: #fff;
+}
+.sp-btn--primary:hover:not(:disabled) {
+  background: #1E40AF;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+.sp-btn--secondary {
+  background: #fff;
+  color: #2563EB;
+  border: 1.5px solid #E2E8F0;
+}
+.sp-btn--secondary:hover:not(:disabled) {
+  border-color: #2563EB;
+  background: #EFF6FF;
+}
+.sp-btn--danger {
+  background: #EF4444;
+  color: #fff;
+}
+.sp-btn--danger:hover:not(:disabled) {
+  background: #DC2626;
+}
+.sp-btn--ghost {
+  background: transparent;
+  color: #2563EB;
+  padding: 8px 12px;
+}
+.sp-btn--ghost:hover:not(:disabled) {
+  background: #EFF6FF;
+}
+.sp-btn--full {
+  width: 100%;
+}
+.sp-btn--sm {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+/* Spinner inside button */
+.sp-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: sp-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+.sp-btn--secondary .sp-spinner,
+.sp-btn--ghost .sp-spinner {
+  border-color: rgba(37, 99, 235, 0.25);
+  border-top-color: #2563EB;
+}
+
+@keyframes sp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Card ────────────────────────────────────────────── */
+.sp-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+  padding: 28px;
+}
+
+/* ─── Input / Field ───────────────────────────────────── */
+.sp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sp-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0F172A;
+}
+.sp-input {
+  padding: 10px 14px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #0F172A;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+  width: 100%;
+}
+.sp-input::placeholder {
+  color: #94A3B8;
+}
+.sp-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.sp-input--error {
+  border-color: #EF4444;
+}
+.sp-input--error:focus {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+.sp-field-error {
+  font-size: 13px;
+  color: #EF4444;
+  margin-top: 2px;
+}
+
+/* ─── Alert ───────────────────────────────────────────── */
+.sp-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sp-alert__icon {
+  flex-shrink: 0;
+  font-size: 15px;
+  margin-top: 1px;
+}
+.sp-alert--error {
+  background: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+}
+.sp-alert--success {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+.sp-alert--warning {
+  background: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+.sp-alert--info {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+}
+
+/* ─── Auth layout (Login / Signup) ───────────────────── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  padding: 24px;
+}
+.auth-wrap {
+  width: 100%;
+  max-width: 440px;
+}
+.auth-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.auth-logo__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2563EB;
+  letter-spacing: -0.5px;
+}
+.auth-logo__sub {
+  font-size: 14px;
+  color: #64748B;
+  margin-top: 4px;
+}
+.auth-heading {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0F172A;
+  margin-bottom: 20px;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.auth-alert-wrap {
+  margin-bottom: 16px;
+}
+.auth-submit {
+  margin-top: 4px;
+}
+
+/* ─── Password checklist ──────────────────────────────── */
+.pw-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  margin-top: 4px;
+}
+.pw-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  transition: color 0.2s ease;
+}
+.pw-rule--unmet {
+  color: #94A3B8;
+}
+.pw-rule--met {
+  color: #10B981;
+}
+.pw-rule__icon {
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #64748B;
+}
+.auth-footer a {
+  color: #2563EB;
+  font-weight: 500;
+}
+.auth-footer a:hover {
+  text-decoration: underline;
+}
