@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import DashboardPage from './components/dashboard/DashboardPage'
+import OptimizerPage from './components/optimizer/OptimizerPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
@@ -27,7 +28,7 @@ export default function App() {
         <Route path="/profile" element={<ProfilePage />} />
 
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/optimizer" element={<Placeholder title="Optimizer" />} />
+        <Route path="/optimizer" element={<OptimizerPage />} />
         <Route path="/cards" element={<Placeholder title="Cards" />} />
         <Route path="/upload" element={<Placeholder title="PDF Upload" />} />
         <Route path="/chatbot" element={<Placeholder title="Chatbot" />} />
