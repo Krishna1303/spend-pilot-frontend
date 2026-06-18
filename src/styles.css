@@ -165,6 +165,139 @@
   border: 1px solid #BFDBFE;
 }
 
+/* ─── App header ─────────────────────────────────────── */
+.app-header {
+  background: #fff;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.app-header__logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2563EB;
+  letter-spacing: -0.3px;
+  text-decoration: none;
+}
+.app-header__logo:hover {
+  text-decoration: none;
+}
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #64748B;
+}
+
+/* ─── Profile page ────────────────────────────────────── */
+.profile-page {
+  min-height: calc(100vh - 60px);
+  background: #F8FAFC;
+  padding: 36px 24px;
+}
+.profile-wrap {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.profile-page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0F172A;
+}
+.profile-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #2563EB;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.profile-save-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* Connected accounts empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 16px;
+  gap: 12px;
+}
+.empty-state__icon {
+  font-size: 36px;
+  line-height: 1;
+}
+.empty-state__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0F172A;
+}
+.empty-state__sub {
+  font-size: 14px;
+  color: #64748B;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* ─── Skeleton loader ─────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease infinite;
+  border-radius: 8px;
+}
+@keyframes skeleton-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+.skeleton-label {
+  height: 14px;
+  width: 80px;
+  margin-bottom: 6px;
+}
+.skeleton-input {
+  height: 42px;
+  width: 100%;
+  border-radius: 10px;
+}
+.skeleton-btn {
+  height: 42px;
+  width: 120px;
+  border-radius: 10px;
+}
+
 /* ─── Auth layout (Login / Signup) ───────────────────── */
 .auth-page {
   min-height: 100vh;
