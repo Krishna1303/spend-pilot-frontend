@@ -47,7 +47,12 @@ html {
 }
 
 body {
-  margin: 0;
+  background: var(--bg);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
