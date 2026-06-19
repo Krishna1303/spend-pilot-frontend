@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { to: '/',          label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/optimizer', label: 'Optimizer', icon: Zap },
   { to: '/cards',     label: 'Cards',     icon: CreditCard },
   { to: '/upload',    label: 'PDF Upload', icon: FileText },

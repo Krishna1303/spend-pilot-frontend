@@ -1,6 +1,7 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import DashboardPage from './components/dashboard/DashboardPage'
+import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
@@ -20,18 +21,26 @@ function Placeholder({ title }) {
 
 export default function App() {
   return (
-    <AppShell>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+    <Routes>
+      {/* Public — no shell */}
+      <Route path="/"       element={<LandingPage />} />
+      <Route path="/login"  element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
 
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/optimizer" element={<Placeholder title="Optimizer" />} />
-        <Route path="/cards" element={<Placeholder title="Cards" />} />
-        <Route path="/upload" element={<Placeholder title="PDF Upload" />} />
-        <Route path="/chatbot" element={<Placeholder title="Chatbot" />} />
-      </Routes>
-    </AppShell>
+      {/* App — inside AppShell with sidebar */}
+      <Route path="*" element={
+        <AppShell>
+          <Routes>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/profile"   element={<ProfilePage />} />
+            <Route path="/optimizer" element={<Placeholder title="Optimizer" />} />
+            <Route path="/cards"     element={<Placeholder title="Cards" />} />
+            <Route path="/upload"    element={<Placeholder title="PDF Upload" />} />
+            <Route path="/chatbot"   element={<Placeholder title="Chatbot" />} />
+            <Route path="*"          element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </AppShell>
+      } />
+    </Routes>
   )
 }
