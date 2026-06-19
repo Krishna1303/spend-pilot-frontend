@@ -518,7 +518,7 @@ function CardModal({ card, onSave, onClose }) {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="flex items-center gap-2 text-sm font-semibold bg-success text-white px-5 py-2.5 rounded-xl hover:bg-success/90 transition-colors disabled:opacity-60 cursor-pointer"
+            className="flex items-center gap-2 text-sm font-semibold bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60 cursor-pointer"
           >
             {saving ? (
               <>
@@ -608,7 +608,7 @@ export default function CardsPage() {
         {activeTab === 'credit' && (
           <button
             onClick={() => setModalCard('new')}
-            className="flex items-center gap-2 bg-success hover:bg-success/90 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             Add card

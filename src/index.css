@@ -95,8 +95,8 @@ a:hover {
   outline: none;
   background: linear-gradient(
     to right,
-    #10B981 0%,
-    #10B981 var(--pct, 0%),
+    #2563EB 0%,
+    #2563EB var(--pct, 0%),
     #E2E8F0 var(--pct, 0%),
     #E2E8F0 100%
   );
@@ -109,7 +109,7 @@ a:hover {
   height: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #10B981;
+  border: 2px solid #2563EB;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.1s;
@@ -124,7 +124,7 @@ a:hover {
   height: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #10B981;
+  border: 2px solid #2563EB;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }

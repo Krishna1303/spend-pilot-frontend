@@ -42,7 +42,7 @@ function HighAprAlert({ card }) {
       </div>
       <button
         onClick={() => navigate('/optimizer')}
-        className="flex items-center gap-1.5 bg-success text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-success/90 transition-colors shrink-0 cursor-pointer"
+        className="flex items-center gap-1.5 bg-primary text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-primary-dark transition-colors shrink-0 cursor-pointer"
       >
         Run optimizer
         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -264,7 +264,7 @@ function ConnectedAccounts({ accounts, loading }) {
         </button>
         <button
           onClick={() => navigate('/optimizer')}
-          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-success rounded-xl py-2.5 hover:bg-success/90 transition-colors cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-primary rounded-xl py-2.5 hover:bg-primary-dark transition-colors cursor-pointer"
         >
           <Zap className="w-3.5 h-3.5" /> Optimize
         </button>
@@ -313,7 +313,7 @@ export default function DashboardPage() {
           value: formatCurrency(metrics.availableToPay),
           subtitle: 'Checking + savings',
           icon: Wallet,
-          iconColor: '#10B981',
+          iconColor: '#2563EB',
         },
         {
           label: 'Cards due soon',

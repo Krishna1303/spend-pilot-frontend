@@ -42,7 +42,7 @@ function BudgetInput({ budget, setBudget, onRun, totalMinimums }) {
         {/* Run button */}
         <button
           onClick={onRun}
-          className="flex items-center justify-center gap-2 bg-success hover:bg-success/90 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors cursor-pointer shrink-0 sm:mb-0"
+          className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-3.5 rounded-xl transition-colors cursor-pointer shrink-0 sm:mb-0"
         >
           <Zap className="w-4 h-4" />
           Run optimizer
@@ -237,7 +237,7 @@ function AiExplanationPanel({ result }) {
             '0% promo balances are deprioritized while still active.',
           ].map((point) => (
             <li key={point} className="flex items-start gap-2 text-xs text-muted">
-              <span className="text-success font-bold shrink-0 mt-0.5">·</span>
+              <span className="text-primary font-bold shrink-0 mt-0.5">·</span>
               {point}
             </li>
           ))}

@@ -98,7 +98,7 @@ function ReviewForm({ parsed, onSave, onReset }) {
           </button>
           <button
             onClick={() => navigate('/optimizer')}
-            className="flex items-center justify-center gap-2 text-sm font-semibold bg-success text-white px-5 py-2.5 rounded-xl hover:bg-success/90 transition-colors cursor-pointer"
+            className="flex items-center justify-center gap-2 text-sm font-semibold bg-primary text-white px-5 py-2.5 rounded-xl hover:bg-primary-dark transition-colors cursor-pointer"
           >
             <Zap className="w-4 h-4" /> Run optimizer
           </button>
@@ -289,7 +289,7 @@ function DropZone({ onFile, onDemo }) {
       onClick={() => inputRef.current?.click()}
       className={`relative flex flex-col items-center justify-center min-h-64 rounded-2xl border-2 border-dashed transition-colors cursor-pointer select-none
         ${dragging
-          ? 'border-success bg-success/5'
+          ? 'border-primary bg-primary/5'
           : 'border-line bg-surface hover:border-primary/40 hover:bg-primary/5'
         }`}
     >
@@ -306,8 +306,8 @@ function DropZone({ onFile, onDemo }) {
 
       {/* Icon */}
       <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors
-        ${dragging ? 'bg-success/15' : 'bg-success/10'}`}>
-        <CloudUpload className={`w-7 h-7 transition-colors ${dragging ? 'text-success' : 'text-success/80'}`} />
+        ${dragging ? 'bg-primary/15' : 'bg-primary/10'}`}>
+        <CloudUpload className={`w-7 h-7 transition-colors ${dragging ? 'text-primary' : 'text-primary/80'}`} />
       </div>
 
       <p className="text-base font-semibold text-ink mb-1">
@@ -318,7 +318,7 @@ function DropZone({ onFile, onDemo }) {
       {/* Demo button — stop propagation so it doesn't also open file dialog */}
       <button
         onClick={(e) => { e.stopPropagation(); onDemo() }}
-        className="bg-success hover:bg-success/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
+        className="bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors cursor-pointer"
       >
         Use demo statement
       </button>

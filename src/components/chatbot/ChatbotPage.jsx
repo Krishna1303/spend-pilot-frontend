@@ -152,8 +152,8 @@ function SupportPanel({ ticketState, setTicketState }) {
       {/* Need a human? */}
       <div className="bg-surface border border-line rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-            <Headphones className="w-5 h-5 text-success" />
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Headphones className="w-5 h-5 text-primary" />
           </div>
           <span className="text-sm font-semibold text-ink">Need a human?</span>
         </div>
@@ -394,7 +394,7 @@ export default function ChatbotPage() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping}
-                className="w-9 h-9 rounded-xl bg-success hover:bg-success/90 flex items-center justify-center shrink-0 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-9 h-9 rounded-xl bg-primary hover:bg-primary-dark flex items-center justify-center shrink-0 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Send message"
               >
                 <SendHorizontal className="w-4 h-4 text-white" />

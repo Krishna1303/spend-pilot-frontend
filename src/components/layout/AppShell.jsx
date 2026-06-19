@@ -25,8 +25,8 @@ function NavItem({ to, label, icon: Icon, mobile = false }) {
       end={to === '/'}
       className={({ isActive }) =>
         mobile
-          ? `flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors min-w-[52px]${isActive ? ' text-success' : ' text-muted'}`
-          : `sp-nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all${isActive ? ' sp-nav-active bg-success' : ''}`
+          ? `flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-xs font-medium transition-colors min-w-[52px]${isActive ? ' text-primary' : ' text-muted'}`
+          : `sp-nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all${isActive ? ' sp-nav-active bg-primary' : ''}`
       }
       style={({ isActive }) =>
         mobile
