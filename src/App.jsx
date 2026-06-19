@@ -2,6 +2,10 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import DashboardPage from './components/dashboard/DashboardPage'
 import LandingPage from './pages/LandingPage'
+import OptimizerPage from './components/optimizer/OptimizerPage'
+import UploadPage from './components/upload/UploadPage'
+import ChatbotPage from './components/chatbot/ChatbotPage'
+import CardsPage from './components/cards/CardsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
@@ -33,10 +37,10 @@ export default function App() {
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile"   element={<ProfilePage />} />
-            <Route path="/optimizer" element={<Placeholder title="Optimizer" />} />
-            <Route path="/cards"     element={<Placeholder title="Cards" />} />
-            <Route path="/upload"    element={<Placeholder title="PDF Upload" />} />
-            <Route path="/chatbot"   element={<Placeholder title="Chatbot" />} />
+            <Route path="/optimizer" element={<OptimizerPage />} />
+            <Route path="/cards"     element={<CardsPage />} />
+            <Route path="/upload"    element={<UploadPage />} />
+            <Route path="/chatbot"   element={<ChatbotPage />} />
             <Route path="*"          element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </AppShell>

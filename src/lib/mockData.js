@@ -10,8 +10,8 @@ export const MOCK_CARDS = [
     minimumPayment: 85.0,
     dueDate: '2026-07-05',
     apr: 28.99,
-    creditLimit: 10000,
-    source: 'plaid',
+    creditLimit: 6000,
+    source: 'pdf',
   },
   {
     id: 2,
@@ -21,8 +21,8 @@ export const MOCK_CARDS = [
     minimumPayment: 110.0,
     dueDate: '2026-07-12',
     apr: 24.99,
-    creditLimit: 12000,
-    source: 'pdf',
+    creditLimit: 8000,
+    source: 'plaid',
   },
   {
     id: 3,
@@ -32,7 +32,7 @@ export const MOCK_CARDS = [
     minimumPayment: 40.0,
     dueDate: '2026-07-20',
     apr: 19.99,
-    creditLimit: 8000,
+    creditLimit: 5000,
     source: 'manual',
   },
   {
@@ -43,7 +43,7 @@ export const MOCK_CARDS = [
     minimumPayment: 35.0,
     dueDate: '2026-08-01',
     apr: 0.0,
-    creditLimit: 5000,
+    creditLimit: 3900,
     source: 'plaid',
   },
 ]
