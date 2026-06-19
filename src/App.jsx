@@ -4,6 +4,7 @@ import DashboardPage from './components/dashboard/DashboardPage'
 import OptimizerPage from './components/optimizer/OptimizerPage'
 import UploadPage from './components/upload/UploadPage'
 import ChatbotPage from './components/chatbot/ChatbotPage'
+import CardsPage from './components/cards/CardsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
@@ -31,7 +32,7 @@ export default function App() {
 
         <Route path="/" element={<DashboardPage />} />
         <Route path="/optimizer" element={<OptimizerPage />} />
-        <Route path="/cards" element={<Placeholder title="Cards" />} />
+        <Route path="/cards" element={<CardsPage />} />
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/chatbot" element={<ChatbotPage />} />
       </Routes>
