@@ -67,12 +67,20 @@ select {
 }
 
 a {
-  color: var(--primary);
   text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+/* ─── Sidebar Nav Item ───────────────────────────────────────────────────────
+   Hover effects for sidebar links — can't rely on Tailwind scanning inside
+   NavLink's className function so we define the interaction here.
+──────────────────────────────────────────────────────────────────────────── */
+.sp-nav-link:not(.sp-nav-active):hover {
+  background-color: #1E293B;
+  color: #ffffff !important;
 }
 
 /* ─── Range Slider (Optimizer) ───────────────────────────────────────────────
