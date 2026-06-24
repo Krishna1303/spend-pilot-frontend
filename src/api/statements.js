@@ -51,7 +51,7 @@ Payment Due Date:      07/05/2026
 Purchase APR: 28.99% Variable`,
 };
 
-export async function useDemoStatement() {
+export async function loadDemoStatement() {
   await new Promise((r) => setTimeout(r, 600));
   const parsed = mapExtracted(DEMO_STATEMENT);
   return { ...parsed, bankName: 'Chase', cardName: 'Freedom Unlimited' };

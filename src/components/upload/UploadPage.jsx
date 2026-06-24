@@ -5,7 +5,7 @@ import {
   ChevronDown, ChevronUp, RotateCcw, Save, Zap, FileCheck,
 } from 'lucide-react'
 import SkeletonBlock from '../ui/SkeletonBlock'
-import { uploadStatement, useDemoStatement } from '../../api/statements'
+import { uploadStatement, loadDemoStatement } from '../../api/statements'
 import { addCard } from '../../api/cards'
 
 // ─── Confidence badge ─────────────────────────────────────────────────────────
@@ -68,11 +68,41 @@ function ReviewForm({ parsed, onSave, onReset }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
-  const set = (key) => (e) =>
+  const set = (key) => (e) => {
     setFields((prev) => ({ ...prev, [key]: e.target.value }))
+    setFieldErrors((fe) => (fe[key] ? { ...fe, [key]: false } : fe))
+    setSaveError('')
+  }
+
+  // Error-aware borders.
+  const fieldCls = (key) =>
+    `w-full border ${fieldErrors[key] ? 'border-danger' : 'border-line'} rounded-xl px-3 py-2.5 text-sm font-semibold text-ink outline-none focus:border-primary transition-colors bg-page`
+  const boxCls = (key) =>
+    `flex items-center border ${fieldErrors[key] ? 'border-danger' : 'border-line'} rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page`
+  const aprBoxCls = `flex items-center border ${fieldErrors.apr ? 'border-danger' : 'border-warning/40'} rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors ${fieldErrors.apr ? 'bg-page' : 'bg-warning/5'}`
+
+  function validate() {
+    const blank = (v) => v === '' || v == null
+    const notNumber = (v) => blank(v) || isNaN(Number(v))
+    const e = {}
+    if (!String(fields.bankName).trim()) e.bankName = true
+    if (!String(fields.cardName).trim()) e.cardName = true
+    if (notNumber(fields.balance)) e.balance = true
+    if (notNumber(fields.minimumPayment)) e.minimumPayment = true
+    if (notNumber(fields.apr)) e.apr = true
+    if (!fields.dueDate) e.dueDate = true
+    return e
+  }
 
   async function handleSave() {
+    const errs = validate()
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs)
+      setSaveError('Please fill in all fields before saving — bank and card name are required.')
+      return
+    }
     setSaving(true)
     setSaveError('')
     try {
@@ -149,7 +179,7 @@ function ReviewForm({ parsed, onSave, onReset }) {
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
             Balance
           </label>
-          <div className="flex items-center border border-line rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page">
+          <div className={boxCls('balance')}>
             <span className="text-muted mr-1.5 text-sm">$</span>
             <input
               type="number"
@@ -166,7 +196,7 @@ function ReviewForm({ parsed, onSave, onReset }) {
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
             Minimum Payment
           </label>
-          <div className="flex items-center border border-line rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page">
+          <div className={boxCls('minimumPayment')}>
             <span className="text-muted mr-1.5 text-sm">$</span>
             <input
               type="number"
@@ -187,7 +217,7 @@ function ReviewForm({ parsed, onSave, onReset }) {
             type="date"
             value={fields.dueDate}
             onChange={set('dueDate')}
-            className="w-full border border-line rounded-xl px-3 py-2.5 text-sm font-semibold text-ink outline-none focus:border-primary transition-colors bg-page"
+            className={fieldCls('dueDate')}
           />
         </div>
 
@@ -196,7 +226,7 @@ function ReviewForm({ parsed, onSave, onReset }) {
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
             APR <span className="text-warning font-normal normal-case">(verify manually)</span>
           </label>
-          <div className="flex items-center border border-warning/40 rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-warning/5">
+          <div className={aprBoxCls}>
             <input
               type="number"
               step="0.01"
@@ -211,26 +241,28 @@ function ReviewForm({ parsed, onSave, onReset }) {
         {/* Bank Name */}
         <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
-            Bank
+            Bank <span className="text-danger">*</span>
           </label>
           <input
             type="text"
+            placeholder="e.g. Chase"
             value={fields.bankName}
             onChange={set('bankName')}
-            className="w-full border border-line rounded-xl px-3 py-2.5 text-sm font-semibold text-ink outline-none focus:border-primary transition-colors bg-page"
+            className={fieldCls('bankName')}
           />
         </div>
 
         {/* Card Name */}
         <div>
           <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
-            Card Name
+            Card Name <span className="text-danger">*</span>
           </label>
           <input
             type="text"
+            placeholder="e.g. Freedom Unlimited"
             value={fields.cardName}
             onChange={set('cardName')}
-            className="w-full border border-line rounded-xl px-3 py-2.5 text-sm font-semibold text-ink outline-none focus:border-primary transition-colors bg-page"
+            className={fieldCls('cardName')}
           />
         </div>
       </div>
@@ -377,7 +409,7 @@ export default function UploadPage() {
     setState('parsing')
     setError(null)
     try {
-      const result = await useDemoStatement()
+      const result = await loadDemoStatement()
       setParsed(result)
       setState('review')
     } catch {

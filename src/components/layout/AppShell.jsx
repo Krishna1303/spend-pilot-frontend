@@ -2,20 +2,41 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   Zap,
+  CalendarClock,
+  FlaskConical,
+  ArrowRightLeft,
+  Bell,
+  TrendingUp,
   CreditCard,
   FileText,
   MessageCircle,
+  LifeBuoy,
   User,
   CircleDot,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
+  { to: '/dashboard',        label: 'Dashboard',        icon: LayoutDashboard },
+  { to: '/optimizer',        label: 'Optimizer',        icon: Zap },
+  { to: '/rescue',           label: 'Rescue Plan',      icon: CalendarClock },
+  { to: '/simulator',        label: 'Simulator',        icon: FlaskConical },
+  { to: '/balance-transfer', label: 'Balance Transfer', icon: ArrowRightLeft },
+  { to: '/alerts',           label: 'Alerts',           icon: Bell },
+  { to: '/progress',         label: 'Progress',         icon: TrendingUp },
+  { to: '/cards',            label: 'Cards',            icon: CreditCard },
+  { to: '/upload',           label: 'PDF Upload',       icon: FileText },
+  { to: '/chatbot',          label: 'Chatbot',          icon: MessageCircle },
+  { to: '/help',             label: 'Help',             icon: LifeBuoy },
+  { to: '/profile',          label: 'My Profile',       icon: User },
+]
+
+// A focused subset for the mobile bottom bar (limited width).
+const MOBILE_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/optimizer', label: 'Optimizer', icon: Zap },
   { to: '/cards',     label: 'Cards',     icon: CreditCard },
-  { to: '/upload',    label: 'PDF Upload', icon: FileText },
-  { to: '/chatbot',   label: 'Chatbot',   icon: MessageCircle },
-  { to: '/profile',   label: 'My Profile', icon: User },
+  { to: '/alerts',    label: 'Alerts',    icon: Bell },
+  { to: '/profile',   label: 'Profile',   icon: User },
 ]
 
 function NavItem({ to, label, icon: Icon, mobile = false }) {
@@ -82,7 +103,7 @@ function Sidebar() {
 
 // ─── Mobile Bottom Nav ────────────────────────────────────────────────────────
 function BottomNav() {
-  const mobileItems = NAV_ITEMS.slice(0, 5)
+  const mobileItems = MOBILE_ITEMS
   return (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-line z-40 flex items-center justify-around px-2 py-2 safe-area-pb">
       {mobileItems.map((item) => (

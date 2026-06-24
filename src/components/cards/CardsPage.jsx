@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CreditCard, Landmark, Plus, Pencil, Trash2,
-  X, DollarSign, CalendarDays, Percent, Save,
-  RefreshCw, Building2,
+  X, Save, RefreshCw, Building2, FileText, Sparkles, ArrowRight,
 } from 'lucide-react'
 import SourceBadge from '../ui/SourceBadge'
 import RiskBadge from '../ui/RiskBadge'
 import SkeletonBlock from '../ui/SkeletonBlock'
 import { fetchCards, fetchAccounts, addCard, updateCard, deleteCard } from '../../api/cards'
+import { connectBank } from '../../api/plaid'
 import { formatCurrency, formatDate, daysUntil } from '../../lib/formatters'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -328,10 +329,97 @@ function AccountMobileItem({ acct }) {
   )
 }
 
+// ─── Add-source picker modal ──────────────────────────────────────────────────
+function SourcePickerModal({ onPick, onClose, connecting }) {
+  const options = [
+    {
+      id: 'manual',
+      Icon: Pencil,
+      title: 'Enter manually',
+      desc: 'Type in your card details yourself.',
+    },
+    {
+      id: 'pdf',
+      Icon: FileText,
+      title: 'Upload a statement',
+      desc: 'We extract the details from a PDF statement.',
+    },
+    {
+      id: 'plaid',
+      Icon: Sparkles,
+      title: 'Connect a bank',
+      desc: 'Link your bank securely via Plaid.',
+    },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(15,23,42,0.5)' }}
+    >
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <div>
+            <h2 className="text-base font-semibold text-ink">Add a card</h2>
+            <p className="text-xs text-muted mt-0.5">How would you like to add it?</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-muted hover:bg-page transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-4 flex flex-col gap-2.5">
+          {options.map(({ id, Icon, title, desc }) => (
+            <button
+              key={id}
+              onClick={() => onPick(id)}
+              disabled={connecting}
+              className="flex items-center gap-3.5 text-left px-4 py-3.5 rounded-xl border border-line hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                {connecting && id === 'plaid' ? (
+                  <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                ) : (
+                  <Icon className="w-5 h-5 text-primary" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-ink">
+                  {connecting && id === 'plaid' ? 'Connecting…' : title}
+                </div>
+                <div className="text-xs text-muted mt-0.5">{desc}</div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Add / Edit card modal ────────────────────────────────────────────────────
 const EMPTY_FORM = {
   bankName: '', cardName: '', balance: '', minimumPayment: '',
   dueDate: '', apr: '', creditLimit: '', source: 'manual',
+}
+
+const isBlank = (v) => v === '' || v == null
+const notNumber = (v) => isBlank(v) || isNaN(Number(v))
+
+function validateCard(form) {
+  const e = {}
+  if (!String(form.bankName).trim()) e.bankName = true
+  if (!String(form.cardName).trim()) e.cardName = true
+  if (notNumber(form.balance)) e.balance = true
+  if (notNumber(form.creditLimit)) e.creditLimit = true
+  if (notNumber(form.apr)) e.apr = true
+  if (notNumber(form.minimumPayment)) e.minimumPayment = true
+  if (!form.dueDate) e.dueDate = true
+  return e
 }
 
 function CardModal({ card, onSave, onClose }) {
@@ -343,13 +431,29 @@ function CardModal({ card, onSave, onClose }) {
       : EMPTY_FORM,
   )
   const [saving, setSaving] = useState(false)
-
-  const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))
-
+  const [fieldErrors, setFieldErrors] = useState({})
   const [saveError, setSaveError] = useState('')
+
+  const set = (key) => (e) => {
+    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+    setFieldErrors((fe) => (fe[key] ? { ...fe, [key]: false } : fe))
+    setSaveError('')
+  }
+
+  // Border classes that turn red when a field is invalid.
+  const boxCls = (key) =>
+    `flex items-center border ${fieldErrors[key] ? 'border-danger' : 'border-line'} rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page`
+  const fieldCls = (key) =>
+    `w-full border ${fieldErrors[key] ? 'border-danger' : 'border-line'} rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page placeholder:text-muted/50`
 
   async function handleSubmit(e) {
     e.preventDefault()
+    const errs = validateCard(form)
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs)
+      setSaveError('Please fill in all fields before saving.')
+      return
+    }
     setSaving(true)
     setSaveError('')
     const payload = {
@@ -399,12 +503,11 @@ function CardModal({ card, onSave, onClose }) {
                 Bank
               </label>
               <input
-                required
                 type="text"
                 placeholder="e.g. Chase"
                 value={form.bankName}
                 onChange={set('bankName')}
-                className="w-full border border-line rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page placeholder:text-muted/50"
+                className={fieldCls('bankName')}
               />
             </div>
 
@@ -414,12 +517,11 @@ function CardModal({ card, onSave, onClose }) {
                 Card name
               </label>
               <input
-                required
                 type="text"
                 placeholder="e.g. Freedom Unlimited"
                 value={form.cardName}
                 onChange={set('cardName')}
-                className="w-full border border-line rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page placeholder:text-muted/50"
+                className={fieldCls('cardName')}
               />
             </div>
 
@@ -428,10 +530,10 @@ function CardModal({ card, onSave, onClose }) {
               <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Balance
               </label>
-              <div className="flex items-center border border-line rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page">
+              <div className={boxCls('balance')}>
                 <span className="text-muted mr-1 text-sm">$</span>
                 <input
-                  required type="number" step="0.01" min="0" placeholder="0.00"
+                  type="number" step="0.01" min="0" placeholder="0.00"
                   value={form.balance} onChange={set('balance')}
                   className="flex-1 text-sm text-ink outline-none bg-transparent tabular-nums placeholder:text-muted/50"
                 />
@@ -443,10 +545,10 @@ function CardModal({ card, onSave, onClose }) {
               <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Credit limit
               </label>
-              <div className="flex items-center border border-line rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page">
+              <div className={boxCls('creditLimit')}>
                 <span className="text-muted mr-1 text-sm">$</span>
                 <input
-                  required type="number" step="1" min="0" placeholder="0"
+                  type="number" step="1" min="0" placeholder="0"
                   value={form.creditLimit} onChange={set('creditLimit')}
                   className="flex-1 text-sm text-ink outline-none bg-transparent tabular-nums placeholder:text-muted/50"
                 />
@@ -458,9 +560,9 @@ function CardModal({ card, onSave, onClose }) {
               <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 APR
               </label>
-              <div className="flex items-center border border-line rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page">
+              <div className={boxCls('apr')}>
                 <input
-                  required type="number" step="0.01" min="0" max="100" placeholder="0.00"
+                  type="number" step="0.01" min="0" max="100" placeholder="0.00"
                   value={form.apr} onChange={set('apr')}
                   className="flex-1 text-sm text-ink outline-none bg-transparent tabular-nums placeholder:text-muted/50"
                 />
@@ -473,10 +575,10 @@ function CardModal({ card, onSave, onClose }) {
               <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
                 Minimum payment
               </label>
-              <div className="flex items-center border border-line rounded-xl px-3 py-2.5 focus-within:border-primary transition-colors bg-page">
+              <div className={boxCls('minimumPayment')}>
                 <span className="text-muted mr-1 text-sm">$</span>
                 <input
-                  required type="number" step="0.01" min="0" placeholder="0.00"
+                  type="number" step="0.01" min="0" placeholder="0.00"
                   value={form.minimumPayment} onChange={set('minimumPayment')}
                   className="flex-1 text-sm text-ink outline-none bg-transparent tabular-nums placeholder:text-muted/50"
                 />
@@ -489,25 +591,10 @@ function CardModal({ card, onSave, onClose }) {
                 Due date
               </label>
               <input
-                required type="date"
+                type="date"
                 value={form.dueDate} onChange={set('dueDate')}
-                className="w-full border border-line rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page"
+                className={fieldCls('dueDate')}
               />
-            </div>
-
-            {/* Source */}
-            <div>
-              <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
-                Source
-              </label>
-              <select
-                value={form.source} onChange={set('source')}
-                className="w-full border border-line rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page cursor-pointer"
-              >
-                <option value="manual">Manual</option>
-                <option value="pdf">PDF Upload</option>
-                <option value="plaid">Plaid</option>
-              </select>
             </div>
           </div>
         </form>
@@ -569,18 +656,39 @@ function TableSkeleton() {
 
 // ─── Cards Page ───────────────────────────────────────────────────────────────
 export default function CardsPage() {
+  const navigate = useNavigate()
   const [cards, setCards] = useState([])
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('credit') // 'credit' | 'bank'
   const [modalCard, setModalCard] = useState(null)     // null=closed, 'new'=add, obj=edit
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [connecting, setConnecting] = useState(false)
+  const [banner, setBanner] = useState(null)           // { type, text }
+
+  const load = useCallback(async () => {
+    const [c, a] = await Promise.all([
+      fetchCards().catch(() => []),
+      fetchAccounts().catch(() => []),
+    ])
+    setCards(c)
+    setAccounts(a)
+  }, [])
 
   useEffect(() => {
-    Promise.all([fetchCards(), fetchAccounts()]).then(([c, a]) => {
-      setCards(c)
-      setAccounts(a)
-      setLoading(false)
-    })
+    let active = true
+    Promise.all([fetchCards().catch(() => []), fetchAccounts().catch(() => [])])
+      .then(([c, a]) => {
+        if (!active) return
+        setCards(c)
+        setAccounts(a)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [])
 
   function handleSave(payload) {
@@ -596,6 +704,43 @@ export default function CardsPage() {
     const prev = cards
     setCards((cs) => cs.filter((c) => c.id !== id))
     deleteCard(id).catch(() => setCards(prev)) // restore on failure
+  }
+
+  // Source picker → route to the right flow.
+  async function handlePick(source) {
+    if (source === 'manual') {
+      setPickerOpen(false)
+      setModalCard('new')
+      return
+    }
+    if (source === 'pdf') {
+      setPickerOpen(false)
+      navigate('/upload')
+      return
+    }
+    // Plaid: opens the Plaid Link overlay (or sandbox-connects in demo mode).
+    setConnecting(true)
+    setBanner(null)
+    try {
+      // onConnected fires from the Plaid Link callback (real flow) or
+      // immediately after the sandbox connect (demo mode).
+      await connectBank({
+        onConnected: async () => {
+          await load()
+          setConnecting(false)
+          setPickerOpen(false)
+          setActiveTab('bank')
+          setBanner({ type: 'success', text: 'Bank connected — accounts imported.' })
+        },
+        onError: (err) => {
+          setConnecting(false)
+          setBanner({ type: 'error', text: err.message || 'Could not connect your bank.' })
+        },
+      })
+    } catch (err) {
+      setConnecting(false)
+      setBanner({ type: 'error', text: err.message || 'Could not connect your bank.' })
+    }
   }
 
   const tabs = [
@@ -615,16 +760,27 @@ export default function CardsPage() {
             Manage your credit cards and connected bank accounts.
           </p>
         </div>
-        {activeTab === 'credit' && (
-          <button
-            onClick={() => setModalCard('new')}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            Add card
-          </button>
-        )}
+        <button
+          onClick={() => { setBanner(null); setPickerOpen(true) }}
+          className="flex items-center gap-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors cursor-pointer shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          Add card
+        </button>
       </div>
+
+      {/* Status banner (Plaid connect result, etc.) */}
+      {banner && (
+        <div
+          className={`mb-5 px-4 py-3 rounded-xl text-sm border ${
+            banner.type === 'success'
+              ? 'bg-success/5 border-success/20 text-success'
+              : 'bg-danger/5 border-danger/20 text-danger'
+          }`}
+        >
+          {banner.text}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex items-center gap-2 mb-5">
@@ -691,6 +847,15 @@ export default function CardsPage() {
             ))}
           </div>
         </>
+      )}
+
+      {/* Source picker */}
+      {pickerOpen && (
+        <SourcePickerModal
+          onPick={handlePick}
+          onClose={() => !connecting && setPickerOpen(false)}
+          connecting={connecting}
+        />
       )}
 
       {/* Add / Edit modal */}

@@ -1,16 +1,32 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { isAuthenticated } from './api/client'
 import AppShell from './components/layout/AppShell'
 import DashboardPage from './components/dashboard/DashboardPage'
 import LandingPage from './pages/LandingPage'
 import OptimizerPage from './components/optimizer/OptimizerPage'
+import RescuePage from './components/rescue/RescuePage'
+import SimulatorPage from './components/simulator/SimulatorPage'
+import BalanceTransferPage from './components/balance/BalanceTransferPage'
+import AlertsPage from './components/alerts/AlertsPage'
+import ProgressPage from './components/progress/ProgressPage'
 import UploadPage from './components/upload/UploadPage'
 import ChatbotPage from './components/chatbot/ChatbotPage'
+import HelpPage from './components/help/HelpPage'
 import CardsPage from './components/cards/CardsPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ProfilePage from './pages/ProfilePage'
 import './App.css'
+
+// Re-evaluates the session on every navigation (via useLocation), so logging in
+// and routing to /dashboard renders the app instead of a stale redirect.
+function RequireAuth({ children }) {
+  const location = useLocation()
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace state={{ from: location }} />
+  }
+  return children
+}
 
 function Placeholder({ title }) {
   return (
@@ -34,21 +50,25 @@ export default function App() {
 
       {/* App — inside AppShell with sidebar (requires a session) */}
       <Route path="*" element={
-        !isAuthenticated() ? (
-          <Navigate to="/login" replace />
-        ) : (
-        <AppShell>
-          <Routes>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/profile"   element={<ProfilePage />} />
-            <Route path="/optimizer" element={<OptimizerPage />} />
-            <Route path="/cards"     element={<CardsPage />} />
-            <Route path="/upload"    element={<UploadPage />} />
-            <Route path="/chatbot"   element={<ChatbotPage />} />
-            <Route path="*"          element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </AppShell>
-        )
+        <RequireAuth>
+          <AppShell>
+            <Routes>
+              <Route path="/dashboard"        element={<DashboardPage />} />
+              <Route path="/profile"         element={<ProfilePage />} />
+              <Route path="/optimizer"       element={<OptimizerPage />} />
+              <Route path="/rescue"          element={<RescuePage />} />
+              <Route path="/simulator"       element={<SimulatorPage />} />
+              <Route path="/balance-transfer" element={<BalanceTransferPage />} />
+              <Route path="/alerts"          element={<AlertsPage />} />
+              <Route path="/progress"        element={<ProgressPage />} />
+              <Route path="/cards"           element={<CardsPage />} />
+              <Route path="/upload"          element={<UploadPage />} />
+              <Route path="/chatbot"         element={<ChatbotPage />} />
+              <Route path="/help"            element={<HelpPage />} />
+              <Route path="*"                element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </AppShell>
+        </RequireAuth>
       } />
     </Routes>
   )

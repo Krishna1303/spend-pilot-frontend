@@ -24,5 +24,23 @@ export async function createSupportTicket({ subject, message, transcript } = {})
     body: { subject, message, ...(transcript ? { transcript } : {}) },
   });
   const ticket = data.ticket || {};
-  return { ticketId: ticket.id || ticket._id || ticket.number || '' };
+  return { ticketId: ticket.id || ticket._id || ticket.number || '', ticket };
+}
+
+export async function listSupportTickets() {
+  const { tickets } = await api('/support/tickets');
+  return tickets || [];
+}
+
+export async function getSupportTicket(id) {
+  const { ticket } = await api(`/support/tickets/${id}`);
+  return ticket;
+}
+
+export async function postTicketMessage(id, message) {
+  const { ticket } = await api(`/support/tickets/${id}/messages`, {
+    method: 'POST',
+    body: { message },
+  });
+  return ticket;
 }
