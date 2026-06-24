@@ -12,6 +12,7 @@ export const authApi = {
       body: { email, password },
       auth: false,
     });
+    if (!data?.token) throw new Error('Login failed — the server did not return a session token.');
     setSession({ token: data.token, user: data.user });
     return data;
   },
@@ -22,6 +23,7 @@ export const authApi = {
       body: { name, email, password },
       auth: false,
     });
+    if (!data?.token) throw new Error('Signup failed — the server did not return a session token.');
     setSession({ token: data.token, user: data.user });
     return data;
   },
