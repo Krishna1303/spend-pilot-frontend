@@ -346,9 +346,12 @@ function CardModal({ card, onSave, onClose }) {
 
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))
 
+  const [saveError, setSaveError] = useState('')
+
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
+    setSaveError('')
     const payload = {
       ...form,
       balance: parseFloat(form.balance) || 0,
@@ -356,13 +359,16 @@ function CardModal({ card, onSave, onClose }) {
       apr: parseFloat(form.apr) || 0,
       creditLimit: parseFloat(form.creditLimit) || 0,
     }
-    if (isEditing) {
-      await updateCard(card.id, payload)
-    } else {
-      await addCard(payload)
+    try {
+      const saved = isEditing
+        ? await updateCard(card.id, payload)
+        : await addCard(payload)
+      onSave(saved)
+    } catch (err) {
+      setSaveError(err.message || 'Could not save the card. Please try again.')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
-    onSave({ ...payload, id: card?.id })
   }
 
   return (
@@ -507,6 +513,9 @@ function CardModal({ card, onSave, onClose }) {
         </form>
 
         {/* Footer */}
+        {saveError && (
+          <div className="px-6 -mt-2 pb-1 text-sm text-danger">{saveError}</div>
+        )}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-line shrink-0">
           <button
             type="button"
@@ -584,8 +593,9 @@ export default function CardsPage() {
   }
 
   function handleDelete(id) {
-    setCards((prev) => prev.filter((c) => c.id !== id))
-    deleteCard(id)
+    const prev = cards
+    setCards((cs) => cs.filter((c) => c.id !== id))
+    deleteCard(id).catch(() => setCards(prev)) // restore on failure
   }
 
   const tabs = [

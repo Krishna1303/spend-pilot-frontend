@@ -12,15 +12,8 @@ import {
 
 import MetricCard from '../ui/MetricCard'
 import SkeletonBlock from '../ui/SkeletonBlock'
-import {
-  fetchDashboardMetrics,
-  fetchTransactions,
-  fetchAccounts,
-  fetchSpendingData,
-  fetchCategories,
-} from '../../api/dashboard'
+import { fetchDashboardData } from '../../api/dashboard'
 import { formatCurrency, formatDate, daysUntil } from '../../lib/formatters'
-import { MOCK_CARDS } from '../../lib/mockData'
 
 // ─── High APR Alert ───────────────────────────────────────────────────────────
 function HighAprAlert({ card }) {
@@ -160,14 +153,18 @@ function SpendingByCategoryChart({ data, loading }) {
 }
 
 // ─── Upcoming Due Dates ───────────────────────────────────────────────────────
-function UpcomingDueDates() {
-  const sorted = [...MOCK_CARDS].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+function UpcomingDueDates({ dueDates = [], loading }) {
+  if (loading) return <SkeletonBlock className="h-64" />
+  const sorted = [...dueDates].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
   return (
     <div className="bg-surface rounded-2xl p-5 shadow-sm border border-line">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-ink">Upcoming due dates</h3>
         <button className="text-xs text-primary font-medium hover:underline cursor-pointer">View all</button>
       </div>
+      {sorted.length === 0 ? (
+        <p className="text-sm text-muted py-6 text-center">No upcoming due dates.</p>
+      ) : (
       <div className="flex flex-col gap-3">
         {sorted.map((card) => {
           const days = daysUntil(card.dueDate)
@@ -190,6 +187,7 @@ function UpcomingDueDates() {
           )
         })}
       </div>
+      )}
     </div>
   )
 }
@@ -280,23 +278,27 @@ export default function DashboardPage() {
   const [accounts, setAccounts] = useState([])
   const [spendingData, setSpendingData] = useState([])
   const [categories, setCategories] = useState([])
+  const [dueDates, setDueDates] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      fetchDashboardMetrics(),
-      fetchTransactions(),
-      fetchAccounts(),
-      fetchSpendingData(),
-      fetchCategories(),
-    ]).then(([m, txs, accs, sd, cats]) => {
-      setMetrics(m)
-      setTransactions(txs)
-      setAccounts(accs)
-      setSpendingData(sd)
-      setCategories(cats)
-      setLoading(false)
-    })
+    let active = true
+    fetchDashboardData()
+      .then((d) => {
+        if (!active) return
+        setMetrics(d.metrics)
+        setTransactions(d.transactions)
+        setAccounts(d.accounts)
+        setSpendingData(d.spendingData)
+        setCategories(d.categories)
+        setDueDates(d.upcomingDueDates)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [])
 
   const metricCards = metrics
@@ -370,7 +372,7 @@ export default function DashboardPage() {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <UpcomingDueDates />
+        <UpcomingDueDates dueDates={dueDates} loading={loading} />
         <RecentTransactions transactions={transactions} loading={loading} />
         <ConnectedAccounts accounts={accounts} loading={loading} />
       </div>

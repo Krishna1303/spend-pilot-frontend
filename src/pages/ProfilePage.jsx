@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { profileApi } from '../api';
+import { profileApi, authApi } from '../api';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
@@ -87,7 +87,7 @@ export default function ProfilePage() {
         <Link to="/login" className="app-header__logo">SpendPilot</Link>
         <div className="app-header__right">
           <span>{profile?.name || ''}</span>
-          <Link to="/login" style={{ color: '#EF4444', fontWeight: 500 }}>Sign out</Link>
+          <Link to="/login" onClick={() => authApi.logout()} style={{ color: '#EF4444', fontWeight: 500 }}>Sign out</Link>
         </div>
       </header>
 

@@ -1,35 +1,25 @@
 /**
  * Optimizer API service.
- * Runs the avalanche algorithm locally now using mock data.
- * Swap for a real POST /api/optimizer/recommend when backend is ready.
+ *   POST /api/optimizer/recommend  — deterministic allocation plan
+ *   POST /api/ai/explain           — plain-English narration of a result
+ *
+ * The Optimizer screen keeps a local avalanche engine for instant slider
+ * feedback; these calls bring in the backend plan + AI explanation when the
+ * user runs the optimizer.
  */
-import { runAvalancheOptimizer } from '../lib/optimizerLogic'
-import { MOCK_CARDS } from '../lib/mockData'
+import { api } from './client';
 
-export async function fetchOptimizerPlan(budget, cardIds = null) {
-  // When backend is ready, replace with:
-  // const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/optimizer/recommend`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_API_KEY}` },
-  //   body: JSON.stringify({ maxPayment: budget, cardIds }),
-  // })
-  // return res.json()
-
-  const cards = cardIds
-    ? MOCK_CARDS.filter((c) => cardIds.includes(c.id))
-    : MOCK_CARDS
-
-  return runAvalancheOptimizer(budget, cards)
+export async function fetchOptimizerPlan({ maxPayment, cards } = {}) {
+  return api('/optimizer/recommend', {
+    method: 'POST',
+    body: { maxPayment, ...(cards ? { cards } : {}) },
+  });
 }
 
-export async function fetchAiExplanation(plan) {
-  // When backend is ready, replace with:
-  // const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ai/explain`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_API_KEY}` },
-  //   body: JSON.stringify({ plan }),
-  // })
-  // return res.json()
-
-  return { explanation: plan.aiExplanation }
+export async function fetchAiExplanation({ kind = 'optimizer', result, cards } = {}) {
+  const data = await api('/ai/explain', {
+    method: 'POST',
+    body: { kind, result, ...(cards ? { cards } : {}) },
+  });
+  return data; // { explanation, source, model? }
 }

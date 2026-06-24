@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   TrendingUp, CalendarClock, Zap, CheckCircle2, ShieldAlert,
   DollarSign, Sparkles, ArrowRight, Info,
@@ -7,6 +7,8 @@ import MetricCard from '../ui/MetricCard'
 import RiskBadge from '../ui/RiskBadge'
 import { runAvalancheOptimizer } from '../../lib/optimizerLogic'
 import { formatCurrency, daysUntil } from '../../lib/formatters'
+import { fetchCards } from '../../api/cards'
+import { fetchOptimizerPlan, fetchAiExplanation } from '../../api/optimizer'
 
 const MAX_BUDGET = 5000
 
@@ -200,7 +202,7 @@ function PaymentPlanCard({ item, rank }) {
 }
 
 // ─── AI Explanation Panel ─────────────────────────────────────────────────────
-function AiExplanationPanel({ result }) {
+function AiExplanationPanel({ result, aiText, aiLoading }) {
   return (
     <div className="flex flex-col gap-4">
       {/* Explanation card */}
@@ -215,7 +217,14 @@ function AiExplanationPanel({ result }) {
           </div>
         </div>
 
-        <p className="text-sm text-ink leading-relaxed mb-4">{result.aiExplanation}</p>
+        {aiLoading ? (
+          <div className="flex items-center gap-2 text-sm text-muted mb-4">
+            <span className="w-3.5 h-3.5 border-2 border-purple/40 border-t-purple rounded-full animate-spin" />
+            Generating explanation…
+          </div>
+        ) : (
+          <p className="text-sm text-ink leading-relaxed mb-4">{aiText || result.aiExplanation}</p>
+        )}
 
         <p className="text-xs text-muted italic border-t border-purple/10 pt-3">
           AI explains the backend-generated plan. It does not change payment amounts and this
@@ -251,9 +260,39 @@ function AiExplanationPanel({ result }) {
 export default function OptimizerPage() {
   const [budget, setBudget] = useState(900)
   const [hasRun, setHasRun] = useState(true)
+  const [cards, setCards] = useState([])
+  const [aiText, setAiText] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
 
-  // Recalculates live as slider/input changes — deterministic, no API call needed
-  const result = useMemo(() => runAvalancheOptimizer(budget), [budget])
+  // Load the user's real credit cards so the engine runs on live data.
+  useEffect(() => {
+    let active = true
+    fetchCards('credit')
+      .then((c) => active && setCards(c))
+      .catch(() => active && setCards([]))
+    return () => {
+      active = false
+    }
+  }, [])
+
+  // Recalculates live as slider/input changes — deterministic, instant feedback.
+  const result = useMemo(() => runAvalancheOptimizer(budget, cards), [budget, cards])
+
+  // On "Run optimizer", fetch the backend plan + AI narration.
+  async function handleRun() {
+    setHasRun(true)
+    setAiLoading(true)
+    setAiText('')
+    try {
+      const plan = await fetchOptimizerPlan({ maxPayment: budget })
+      const { explanation } = await fetchAiExplanation({ kind: 'optimizer', result: plan })
+      setAiText(explanation || '')
+    } catch {
+      setAiText('') // fall back to the local deterministic explanation
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   return (
     <div className="p-5 lg:p-7 max-w-7xl mx-auto">
@@ -272,7 +311,7 @@ export default function OptimizerPage() {
       <BudgetInput
         budget={budget}
         setBudget={setBudget}
-        onRun={() => setHasRun(true)}
+        onRun={handleRun}
         totalMinimums={result.totalMinimums}
       />
 
@@ -301,7 +340,7 @@ export default function OptimizerPage() {
 
           {/* Right: AI panel — sticky on desktop */}
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <AiExplanationPanel result={result} />
+            <AiExplanationPanel result={result} aiText={aiText} aiLoading={aiLoading} />
           </div>
         </div>
       )}

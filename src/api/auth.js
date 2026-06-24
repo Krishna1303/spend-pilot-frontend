@@ -1,20 +1,32 @@
-import { mockRequest, mockError } from './client';
+import { api, setSession, clearSession } from './client';
 
+/**
+ * Auth API — `/auth/signup` and `/auth/login`.
+ * Both return `{ token, user }`; we persist the session on success so every
+ * subsequent request is authenticated.
+ */
 export const authApi = {
   async login({ email, password }) {
-    if (password === 'fail') {
-      return mockError('Invalid email or password. Please try again.');
-    }
-    return mockRequest({
-      user: { id: '1', name: 'Alex Johnson', email },
-      token: 'mock-token-abc123',
+    const data = await api('/auth/login', {
+      method: 'POST',
+      body: { email, password },
+      auth: false,
     });
+    setSession({ token: data.token, user: data.user });
+    return data;
   },
 
-  async signup({ name, email }) {
-    return mockRequest({
-      user: { id: '1', name, email },
-      token: 'mock-token-abc123',
+  async signup({ name, email, password }) {
+    const data = await api('/auth/signup', {
+      method: 'POST',
+      body: { name, email, password },
+      auth: false,
     });
+    setSession({ token: data.token, user: data.user });
+    return data;
+  },
+
+  logout() {
+    clearSession();
   },
 };

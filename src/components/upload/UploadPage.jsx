@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import SkeletonBlock from '../ui/SkeletonBlock'
 import { uploadStatement, useDemoStatement } from '../../api/statements'
-import { formatCurrency } from '../../lib/formatters'
+import { addCard } from '../../api/cards'
 
 // ─── Confidence badge ─────────────────────────────────────────────────────────
 function ConfidenceBadge({ label, type }) {
@@ -67,16 +67,33 @@ function ReviewForm({ parsed, onSave, onReset }) {
   const [rawOpen, setRawOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const set = (key) => (e) =>
     setFields((prev) => ({ ...prev, [key]: e.target.value }))
 
   async function handleSave() {
     setSaving(true)
-    await new Promise((r) => setTimeout(r, 900))
-    setSaving(false)
-    setSaved(true)
-    onSave(fields)
+    setSaveError('')
+    try {
+      await addCard({
+        cardType: 'credit',
+        bankName: fields.bankName,
+        cardName: fields.cardName,
+        balance: parseFloat(fields.balance) || 0,
+        statementBalance: parseFloat(fields.balance) || 0,
+        minimumPayment: parseFloat(fields.minimumPayment) || 0,
+        dueDate: fields.dueDate,
+        apr: parseFloat(fields.apr) || 0,
+        source: 'pdf',
+      })
+      setSaved(true)
+      onSave(fields)
+    } catch (err) {
+      setSaveError(err.message || 'Could not save this card. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (saved) {
@@ -237,6 +254,14 @@ function ReviewForm({ parsed, onSave, onReset }) {
         )}
       </div>
 
+      {/* Save error */}
+      {saveError && (
+        <div className="flex items-start gap-3 bg-danger/5 border border-danger/20 rounded-xl px-4 py-3 mb-4 text-sm text-danger">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{saveError}</span>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end">
         <button
@@ -352,7 +377,6 @@ export default function UploadPage() {
     setState('parsing')
     setError(null)
     try {
-      const { useDemoStatement } = await import('../../api/statements')
       const result = await useDemoStatement()
       setParsed(result)
       setState('review')

@@ -3,7 +3,7 @@ import {
   Sparkles, SendHorizontal, Headphones,
   CheckCircle2, Send, User,
 } from 'lucide-react'
-import { createSupportTicket } from '../../api/chatbot'
+import { createSupportTicket, sendChatMessage } from '../../api/chatbot'
 
 // ─── FAQ matching ─────────────────────────────────────────────────────────────
 const FAQ = [
@@ -273,7 +273,7 @@ export default function ChatbotPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
-  function sendMessage(text) {
+  async function sendMessage(text) {
     const trimmed = text.trim()
     if (!trimmed || isTyping) return
 
@@ -284,14 +284,24 @@ export default function ChatbotPage() {
     setInput('')
     setIsTyping(true)
 
-    setTimeout(() => {
-      const { answer, showTicket } = getBotResponse(trimmed)
-      setMessages((prev) => [
-        ...prev,
-        { id: `bot-${Date.now()}`, role: 'bot', content: answer, showTicket },
-      ])
-      setIsTyping(false)
-    }, 850)
+    let answer
+    let showTicket
+    try {
+      const res = await sendChatMessage(trimmed)
+      answer = res.answer
+      showTicket = res.escalatable
+    } catch {
+      // Fall back to the built-in FAQ if the bot endpoint is unavailable.
+      const fallback = getBotResponse(trimmed)
+      answer = fallback.answer
+      showTicket = fallback.showTicket
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      { id: `bot-${Date.now()}`, role: 'bot', content: answer, showTicket },
+    ])
+    setIsTyping(false)
   }
 
   function handleSend() {

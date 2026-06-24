@@ -69,10 +69,10 @@ function Sidebar() {
         <div className="rounded-xl bg-nav-hover p-3">
           <div className="flex items-center gap-2 mb-1">
             <CircleDot className="w-3 h-3 text-success shrink-0" />
-            <span className="text-white text-xs font-medium">Demo mode active</span>
+            <span className="text-white text-xs font-medium">Live data</span>
           </div>
           <p className="text-white/40 text-[10px] leading-relaxed">
-            All data is mocked so you can explore the full SpendPilot story.
+            Connected to the SpendPilot API for your cards, statements, and insights.
           </p>
         </div>
       </div>

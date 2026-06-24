@@ -1,44 +1,83 @@
 /**
  * Cards & accounts API service.
- * Returns mock data now; swap for real endpoints when backend is ready:
- *   GET    /api/cards
+ *   GET    /api/cards?type=credit
  *   POST   /api/cards
- *   PUT    /api/cards/:id
+ *   PATCH  /api/cards/:id
  *   DELETE /api/cards/:id
- *   GET    /api/accounts
+ *   GET    /api/plaid/accounts   (debit / bank tab)
+ *
+ * Responses are mapped into the shapes the Cards screen already renders.
  */
-import { MOCK_CARDS, MOCK_ACCOUNTS } from '../lib/mockData'
+import { api, toDateStr } from './client';
 
-export async function fetchCards() {
-  // When backend is ready, replace with:
-  // const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cards`, {
-  //   headers: { Authorization: `Bearer ${import.meta.env.VITE_API_KEY}` },
-  // })
-  // return res.json()
-  await new Promise((r) => setTimeout(r, 600))
-  return [...MOCK_CARDS]
+const num = (v) => (v == null ? 0 : Number(v));
+
+// API card → UI card shape used by CardsPage / DashboardPage.
+export function mapCard(c) {
+  return {
+    id: c.id,
+    cardType: c.cardType || 'credit',
+    bankName: c.bankName || '',
+    cardName: c.cardName || '',
+    last4: c.last4 || '',
+    balance: num(c.balance),
+    statementBalance: num(c.statementBalance),
+    minimumPayment: num(c.minimumPayment),
+    dueDate: toDateStr(c.dueDate),
+    apr: num(c.apr),
+    creditLimit: num(c.creditLimit),
+    source: c.source || 'manual',
+  };
+}
+
+// Plaid account → UI account shape used by CardsPage / DashboardPage.
+function mapAccount(a, i) {
+  const balances = a.balances || {};
+  return {
+    id: a.id ?? a.account_id ?? i,
+    bankName: a.institutionName || a.bankName || a.name || 'Bank',
+    accountName: a.officialName || a.official_name || a.name || 'Account',
+    accountNumber: a.mask || a.last4 || '',
+    balance: num(a.balance ?? balances.current ?? balances.available),
+    type: a.subtype || a.type || 'checking',
+    lastSynced: toDateStr(a.lastSynced || a.updatedAt) || toDateStr(new Date()),
+    source: 'plaid',
+  };
+}
+
+export async function fetchCards(type = 'credit') {
+  const { cards } = await api(`/cards?type=${type}`);
+  return (cards || []).map(mapCard);
 }
 
 export async function fetchAccounts() {
-  // GET /api/accounts
-  await new Promise((r) => setTimeout(r, 600))
-  return [...MOCK_ACCOUNTS]
+  try {
+    const { accounts } = await api('/plaid/accounts');
+    return (accounts || []).map(mapAccount);
+  } catch {
+    return [];
+  }
 }
 
 export async function addCard(data) {
-  // POST /api/cards  body: data
-  await new Promise((r) => setTimeout(r, 700))
-  return { ...data, id: Date.now() }
+  const { card } = await api('/cards', {
+    method: 'POST',
+    body: { cardType: 'credit', ...data },
+  });
+  return mapCard(card);
 }
 
 export async function updateCard(id, data) {
-  // PUT /api/cards/:id  body: data
-  await new Promise((r) => setTimeout(r, 700))
-  return { ...data, id }
+  const { card } = await api(`/cards/${id}`, { method: 'PATCH', body: data });
+  return mapCard(card);
 }
 
 export async function deleteCard(id) {
-  // DELETE /api/cards/:id
-  await new Promise((r) => setTimeout(r, 500))
-  return { success: true }
+  await api(`/cards/${id}`, { method: 'DELETE' });
+  return { success: true, id };
+}
+
+// Pull fresh balances from a connected Plaid account.
+export async function syncCards({ force = false } = {}) {
+  return api(`/cards/sync${force ? '?force=true' : ''}`, { method: 'POST' });
 }

@@ -1,39 +1,28 @@
 /**
- * Chatbot & support ticket API service.
- * Client-side FAQ matching is used now (instant, no latency).
- * Swap for real endpoints when backend is ready:
- *   POST /api/chatbot/message  → { reply: string }
- *   POST /api/support/ticket   → { ticketId: string }
+ * Chatbot & support API service.
+ *   POST /api/chatbot/ask      { question } → { answer, escalatable, sources, confidence }
+ *   POST /api/support/tickets  { subject, message } → { ticket }
+ *   POST /api/support/escalate { subject, message, transcript? } → { ticket, ... }
  */
+import { api } from './client';
 
-export async function sendChatMessage(message) {
-  // When backend is ready, replace with:
-  // const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/chatbot/message`, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
-  //   },
-  //   body: JSON.stringify({ message }),
-  // })
-  // return res.json()
-
-  await new Promise((r) => setTimeout(r, 800))
-  return { reply: null } // client-side FAQ lookup handles response
+export async function sendChatMessage(question) {
+  const data = await api('/chatbot/ask', { method: 'POST', body: { question } });
+  return {
+    answer: data.answer,
+    escalatable: !!data.escalatable,
+    sources: data.sources || [],
+    confidence: data.confidence,
+  };
 }
 
-export async function createSupportTicket({ subject, message }) {
-  // When backend is ready, replace with:
-  // const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/support/ticket`, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
-  //   },
-  //   body: JSON.stringify({ subject, message }),
-  // })
-  // return res.json()
-
-  await new Promise((r) => setTimeout(r, 1200))
-  return { ticketId: `SP-${Math.floor(1000 + Math.random() * 9000)}` }
+export async function createSupportTicket({ subject, message, transcript } = {}) {
+  // Escalate when we have a chat transcript to attach, otherwise open a plain ticket.
+  const path = transcript ? '/support/escalate' : '/support/tickets';
+  const data = await api(path, {
+    method: 'POST',
+    body: { subject, message, ...(transcript ? { transcript } : {}) },
+  });
+  const ticket = data.ticket || {};
+  return { ticketId: ticket.id || ticket._id || ticket.number || '' };
 }

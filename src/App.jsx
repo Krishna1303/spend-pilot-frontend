@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { isAuthenticated } from './api/client'
 import AppShell from './components/layout/AppShell'
 import DashboardPage from './components/dashboard/DashboardPage'
 import LandingPage from './pages/LandingPage'
@@ -31,8 +32,11 @@ export default function App() {
       <Route path="/login"  element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* App — inside AppShell with sidebar */}
+      {/* App — inside AppShell with sidebar (requires a session) */}
       <Route path="*" element={
+        !isAuthenticated() ? (
+          <Navigate to="/login" replace />
+        ) : (
         <AppShell>
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -44,6 +48,7 @@ export default function App() {
             <Route path="*"          element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </AppShell>
+        )
       } />
     </Routes>
   )
