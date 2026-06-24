@@ -10,14 +10,20 @@ const num = (v) => (v == null ? 0 : Number(v))
 const fmtDate = (d) => (d ? formatDate(String(d).slice(0, 10)) : '—')
 
 let nextId = 1
-const newScenario = (label) => ({ _id: nextId++, label, extraMonthly: '', lumpSum: '' })
+const newScenario = () => ({ _id: nextId++, label: '', extraMonthly: '', lumpSum: '' })
+
+// Build a readable label from the entered values when the user leaves it blank.
+function deriveLabel(sc, index) {
+  if (sc.label.trim()) return sc.label.trim()
+  const parts = []
+  if (sc.extraMonthly !== '') parts.push(`+${formatCurrency(Number(sc.extraMonthly))}/mo`)
+  if (sc.lumpSum !== '') parts.push(`${formatCurrency(Number(sc.lumpSum))} lump sum`)
+  return parts.join(' + ') || `Scenario ${index + 1}`
+}
 
 export default function SimulatorPage() {
   const [monthlyPayment, setMonthlyPayment] = useState('')
-  const [scenarios, setScenarios] = useState([
-    newScenario('Extra $100/mo'),
-    newScenario('$1,000 lump sum'),
-  ])
+  const [scenarios, setScenarios] = useState([newScenario()])
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -25,13 +31,13 @@ export default function SimulatorPage() {
   const setScenario = (id, key) => (e) =>
     setScenarios((s) => s.map((sc) => (sc._id === id ? { ...sc, [key]: e.target.value } : sc)))
 
-  const addScenario = () => setScenarios((s) => [...s, newScenario(`Scenario ${s.length + 1}`)])
+  const addScenario = () => setScenarios((s) => [...s, newScenario()])
   const removeScenario = (id) => setScenarios((s) => s.filter((sc) => sc._id !== id))
 
   async function handleRun() {
     const payloadScenarios = scenarios
-      .map((sc) => {
-        const out = { label: sc.label || 'Scenario' }
+      .map((sc, i) => {
+        const out = { label: deriveLabel(sc, i) }
         if (sc.extraMonthly !== '') out.extraMonthly = Number(sc.extraMonthly)
         if (sc.lumpSum !== '') out.lumpSum = Number(sc.lumpSum)
         return out
@@ -90,10 +96,13 @@ export default function SimulatorPage() {
           {scenarios.map((sc) => (
             <div key={sc._id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1fr_auto] gap-3 items-end">
               <div>
-                <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">Label</label>
+                <label className="block text-xs font-semibold text-muted uppercase tracking-wider mb-1.5">
+                  Label <span className="font-normal normal-case text-muted/70">(optional)</span>
+                </label>
                 <input
                   type="text" value={sc.label} onChange={setScenario(sc._id, 'label')}
-                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page"
+                  placeholder="auto from values"
+                  className="w-full border border-line rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:border-primary transition-colors bg-page placeholder:text-muted/50"
                 />
               </div>
               <div>

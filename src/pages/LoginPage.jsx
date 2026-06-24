@@ -11,8 +11,8 @@ function validate({ email, password }) {
   const errs = {}
   if (!email.trim()) {
     errs.email = 'Email is required.'
-  } else if (!email.includes('@') || !email.toLowerCase().endsWith('.com')) {
-    errs.email = 'Enter a valid email address (must contain @ and end with .com).'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    errs.email = 'Enter a valid email address.'
   }
   if (!password) {
     errs.password = 'Password is required.'

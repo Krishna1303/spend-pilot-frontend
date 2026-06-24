@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
-  CalendarClock, Zap, AlertTriangle, Info, CheckCircle2,
-  CalendarDays, TrendingDown, ShieldCheck, Sparkles,
+  CalendarClock, CalendarDays, Wallet, ShieldCheck,
+  Zap, AlertTriangle, Info, Sparkles,
 } from 'lucide-react'
 import MetricCard from '../ui/MetricCard'
 import SkeletonBlock from '../ui/SkeletonBlock'
@@ -82,6 +82,7 @@ export default function RescuePage() {
     }
     setLoading(true)
     setError('')
+    setResult(null) // clear the previous plan so warnings/cards never go stale
     try {
       const body = {
         paycheckDate: form.paycheckDate,
@@ -103,6 +104,19 @@ export default function RescuePage() {
   const today = actions.filter((a) => a.when === 'today')
   const payday = actions.filter((a) => a.when !== 'today')
   const summary = result?.summary ?? {}
+
+  // Short-term totals — use the backend summary when present, else aggregate actions.
+  const sumAmt = (arr) => arr.reduce((s, a) => s + num(a.amount), 0)
+  const payToday = summary.paidToday != null ? num(summary.paidToday) : sumAmt(today)
+  const payPayday = summary.paidOnPayday != null ? num(summary.paidOnPayday) : sumAmt(payday)
+  const totalAllocated =
+    summary.totalAllocated != null ? num(summary.totalAllocated) : payToday + payPayday
+  const lateFeesText =
+    summary.lateFeeAmountAvoided != null
+      ? formatCurrency(num(summary.lateFeeAmountAvoided))
+      : summary.lateFeesAvoided != null
+        ? `${summary.lateFeesAvoided}`
+        : '—'
 
   return (
     <div className="p-5 lg:p-7 max-w-7xl mx-auto">
@@ -195,30 +209,30 @@ export default function RescuePage() {
             </div>
           )}
 
-          {/* Summary */}
+          {/* Summary — short-term, this-paycheck focused */}
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
             <MetricCard
-              label="Debt-free date"
-              value={summary.debtFreeDate ? formatDate(String(summary.debtFreeDate).slice(0, 10)) : '—'}
-              subtitle={summary.monthsToDebtFree != null ? `${summary.monthsToDebtFree} months` : undefined}
+              label="Pay today"
+              value={formatCurrency(payToday)}
+              subtitle="Before payday"
+              icon={CalendarClock} iconColor="#EF4444"
+            />
+            <MetricCard
+              label="Pay on payday"
+              value={formatCurrency(payPayday)}
+              subtitle={form.paycheckDate ? formatDate(form.paycheckDate) : undefined}
               icon={CalendarDays} iconColor="#2563EB"
             />
             <MetricCard
+              label="Total allocated"
+              value={formatCurrency(totalAllocated)}
+              subtitle="This cycle"
+              icon={Wallet} iconColor="#7C3AED"
+            />
+            <MetricCard
               label="Late fees avoided"
-              value={summary.lateFeeAmountAvoided != null ? formatCurrency(num(summary.lateFeeAmountAvoided)) : String(summary.lateFeesAvoided ?? '—')}
+              value={lateFeesText}
               icon={ShieldCheck} iconColor="#10B981"
-            />
-            <MetricCard
-              label="Interest saved"
-              value={summary.interestSavedVsMinimums != null ? formatCurrency(num(summary.interestSavedVsMinimums)) : '—'}
-              subtitle="vs minimums"
-              icon={TrendingDown} iconColor="#F59E0B"
-            />
-            <MetricCard
-              label="Months saved"
-              value={summary.monthsSavedVsMinimums != null ? String(summary.monthsSavedVsMinimums) : '—'}
-              subtitle="vs minimums"
-              icon={CheckCircle2} iconColor="#7C3AED"
             />
           </div>
 
